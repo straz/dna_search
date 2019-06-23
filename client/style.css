@@ -1,0 +1,17 @@
+.search .jumbotron { padding-bottom: 9em; }
+
+.results.error { font-size: 80% }
+
+.new_fade {
+    background-color: #FFD;
+}
+
+.new_fade_end {
+   background-color: white;
+  -webkit-transition: all 1s ease-in-out;
+  -moz-transition: all 1s ease-in-out;
+  -o-transition: all 1s ease-in-out;
+  transition: all 1s ease-in-out;
+}
+
+.time { font-size: 90%; }
