@@ -99,7 +99,8 @@ the status and any results.
 The `biopython` layer contains large python libraries and a copy of the reference data files.
 These are available to the lambda at runtime, they are mounted in `/opt/data` while the lambda runs.
 
-The build script for the layer is basically `pip install` plus `gzip`. You might think it's ok to build this
-layer on your mac, but not so. Apparently there are binaries involved, and any error messages you
-might see are quite deceptive. So you have to build the layer on a CentOS image (or authentic Amazon AMI).
+The `build.sh` script for the layer is basically `pip install` plus `gzip`. You might think it's ok
+to build this layer on your mac, but not so. Apparently there are binaries involved, and any error
+messages you might see are quite deceptive. So you have to build the layer on a CentOS image
+(or an authentic Amazon AMI).
 

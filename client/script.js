@@ -11,8 +11,8 @@ USER_INFO = { "email": "guest@example.com", "org": "Megacorp" }
 USER_SRC = 'user.fasta' // used as filename for user-entered data
 
 MIME_TYPES = {
-    'fasta': 'application/fasta',
-    'gb': 'application/gb'
+    'fasta': 'application/fasta'
+    // 'gb': 'application/gb' # not yet tested
 };
 
 // Hold onto recent items. Display them even if they're not in the database yet. 

@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Ginkgo Search
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'OPTIONS,POST,GET,PUT,DELETE'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowOrigin: "'*'"
+  Function:
+    Timeout: 10
+    Runtime: python3.7
+    MemorySize: 128
+    Handler: lambda_handler.lambda_handler
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: ginkgo-search
+
+Outputs:
+  APIUrl:
+    Description: API URL
+    Value: !Sub "https://${GinkgoApi}.execute-api.us-east-1.amazonaws.com/"
+
+Resources:
+
+  ###    
+  # Bucket
+  ###
+  Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: BucketPermission
+    Properties:
+      BucketName: !Ref BucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !GetAtt BucketWatcher.Arn
+
+  BucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+    Action: 'lambda:InvokeFunction'
+    FunctionName: !Ref BucketWatcher
+    Principal: s3.amazonaws.com
+    SourceAccount: !Ref "AWS::AccountId"
+    SourceArn: !Sub "arn:aws:s3:::${BucketName}"
+
+  ###
+  # Database
+  ###
+
+  GinkgoDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "guid"
+          AttributeType: "S"
+        -
+          AttributeName: "start_time"
+          AttributeType: "S"
+        -
+          AttributeName: "email"
+          AttributeType: "S"
+        -
+          AttributeName: "filename"
+          AttributeType: "S"
+        -
+          AttributeName: "status"
+          AttributeType: "S"
+        -
+          AttributeName: "results"
+          AttributeType: "L"     
+      KeySchema:
+        -
+          AttributeName: "guid"
+          KeyType: "HASH"
+        -
+          AttributeName: "email"
+          KeyType: "RANGE"
+
+  GinkgoSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: GinkgoSQS
+
+
+  ###
+  # API Def
+  ###
+
+  GinkgoApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+
+  ###
+  # Lambdas
+  ###
+
+  QueriesGet:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: routes/queries/get
+      Role: !GetAtt ApiEndpointRole.Arn
+      Events:
+        List:
+          Type: Api
+          Properties:
+            RestApiId: !Ref GinkgoApi
+            Path: /queries
+            Method: GET
+
+  BucketWatcher:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  GinkgoProcessor:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: [lambda.amazonaws.com]}
+          Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+      - PolicyName: S3Policy
+        PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:DeleteObject'
+            Resource: !Sub "arn:aws:s3:::${BucketName}/*"
