@@ -1,3 +1,7 @@
+/*
+Web client for DNA search app
+*/
+
 $(document).ready(init_page);
 
 API_URL = 'https://wxt5vzyewl.execute-api.us-east-1.amazonaws.com/dev'
@@ -6,13 +10,13 @@ UPLOAD_URL = 'https://ginkgo-search.s3.amazonaws.com/inbox/'
 USER_INFO = { "email": "guest@example.com", "org": "Megacorp" }
 USER_SRC = 'user.fasta' // used as filename for user-entered data
 
-MIME_TYPES = { 'fasta': 'application/fasta',
-	       'gb': 'application/gb',
-	       'jpg': 'application/jpg'
-	     };
+MIME_TYPES = {
+    'fasta': 'application/fasta',
+    'gb': 'application/gb'
+};
 
-// Hold onto recent items. Display them even if they're not in the database yet.
-// table contains { guid : item }
+// Hold onto recent items. Display them even if they're not in the database yet. 
+// Contains { guid : item }
 RECENT_ITEMS = {};
 
 function init_page(){
@@ -36,6 +40,14 @@ function validate_form(){
     if (typeof source == 'undefined') {
 	console.log('pick a source');
 	return false;
+    }
+    if (source == 'file'){
+	filename = $('#file_field').val();
+	ext = get_extension(filename);
+	if (! (ext in MIME_TYPES)){
+	    console.log('Invalid file extension:', ext);
+	    return false;
+	}
     }
     return true;
 }
@@ -77,7 +89,7 @@ function start_upload(event){
 	filename = file.name;
 	mime_type = get_mime_type(filename)
     } else if (source == 'textarea'){
-	string = $('#textarea_field').val()
+	string = $('#textarea_field').val().toUpperCase();
 	filename = USER_SRC;
 	header = '> user-supplied data\n'
 	file = new File([new Blob([header + string])], filename);
@@ -141,6 +153,8 @@ function find_item_by_guid(guid, items){
     }
 }
 
+// data: list of job status items received from server
+// RECENT_ITEMS includes items that may not yet have been captured in the database
 function update_with_recent_items(data){
     recents = Object.values(RECENT_ITEMS)
     result = [...data]; // make a copy, requires ES6
@@ -150,6 +164,7 @@ function update_with_recent_items(data){
 	if ((typeof found == 'undefined') || found == null){
 	    result.push(recent);
 	} else {
+	    // safely recorded in database, no further need to track locally in the client
 	    delete RECENT_ITEMS[recent.guid];
 	}
     }
@@ -160,8 +175,9 @@ function with_queries(data){
     show_table(update_with_recent_items(data));
 }    
 
+// Polls the server every 5 seconds to get a fresh copy of job status
 function poll_loop(){
-    wait = 5 * 1000 // every 5 seconds
+    wait = 5 * 1000 
     get_queries(USER_INFO.email);
     setTimeout(poll_loop, wait)
 }
