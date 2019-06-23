@@ -1,5 +1,10 @@
 # Ginkgo challenge
 
+
+## Try it out
+
+The client url is https://straz.github.io/dna_search/client/
+
 ## Components
 
 ### Client
