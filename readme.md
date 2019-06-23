@@ -1,5 +1,4 @@
-# Ginkgo challenge
-
+# DNA search
 
 ## Try it out
 
@@ -104,3 +103,18 @@ to build this layer on your mac, but not so. Apparently there are binaries invol
 messages you might see are quite deceptive. So you have to build the layer on a CentOS image
 (or an authentic Amazon AMI).
 
+## Install and configure
+
+One of the requirements in this exercise is that local dev install has to be a one-click script.
+You can run `start.py` and it'll fire up a local AWS SAM environment (assumes you have docker).
+The template file is not properly configured, so this won't do much good. 
+
+I'm not sure I'll have the time it would take to tune the template, so this is mostly to give you
+an impression of what a solution might look like.
+
+Files:
+```
+  aws-template.yaml   # AWS cloud formation template (incomplete and inaccurate)
+  start.py            # The one-click script (incomplete)
+  layers/build.sh     # A one-click script to build the biopython layer with cached data (works fine)
+```
