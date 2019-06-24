@@ -19,6 +19,9 @@ Parameters:
   BucketName:
     Type: String
     Default: ginkgo-search
+  BioLayerArn
+    Type: String
+    Default: arn:aws:lambda:us-east-1:381450826529:layer:Biopython:5
 
 Outputs:
   APIUrl:
@@ -114,7 +117,6 @@ Resources:
             Path: /queries
             Method: GET
 
-
   BucketWatcher:
     Type: AWS::Lambda::Function
     Properties:
@@ -126,6 +128,8 @@ Resources:
       Handler: lambda_handler.lambda_handler
       Runtime: python3.7
       Role: !GetAtt EverythingRole.Arn
+      Layers:
+        - !Ref BioLayerArn
       Events:
         ProcessorEvent:
           Type: SQS

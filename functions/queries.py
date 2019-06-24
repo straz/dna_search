@@ -10,9 +10,9 @@ import json
 import boto3
 from boto3.dynamodb.conditions import Key
 
+from common import DB_NAME
 
 DYNAMO = boto3.resource('dynamodb')
-DB_NAME = 'GinkgoDB'
 TABLE = DYNAMO.Table(DB_NAME)
 
 def lambda_handler(event, context):

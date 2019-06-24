@@ -6,8 +6,6 @@ When a file is uploaded to S3:
   enter record in the database
   move file to /queries folder
   send message to SQS
-
-
 """
 
 import logging
@@ -17,17 +15,9 @@ import os
 from datetime import datetime
 from botocore.exceptions import ClientError
 
-# Override AWS Lambda default logger
-root = logging.getLogger()
-if root.handlers:
-    for handler in root.handlers:
-        root.removeHandler(handler)
-logging.basicConfig(format='%(asctime)s %(message)s',level=logging.DEBUG)
+from common import DB_NAME, SQS_NAME, BUCKET_NAME, log_setup
 
-
-DB_NAME = 'GinkgoDB'
-SQS_NAME = 'https://sqs.us-east-1.amazonaws.com/381450826529/GinkgoSQS'
-BUCKET_NAME = 'ginkgo-search'
+log_setup()
 
 S3_RESOURCE = boto3.resource('s3')
 S3_CLIENT = boto3.client('s3')

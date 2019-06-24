@@ -5,21 +5,18 @@ import logging
 import tempfile
 import traceback
 from datetime import datetime
+
+from common import DB_NAME, log_setup
+
+# Import from biopython layer
 from Bio import SeqIO
 
-# Override AWS Lambda default logger
-root = logging.getLogger()
-if root.handlers:
-    for handler in root.handlers:
-        root.removeHandler(handler)
-logging.basicConfig(format='%(asctime)s %(message)s',level=logging.DEBUG)
-
+log_setup()
 
 S3 = boto3.client('s3')
 BUCKET = 'ginkgo-search'
 
 DYNAMO = boto3.client('dynamodb')
-DB_NAME = 'GinkgoDB'
 
 # Data loaded in 'biopython' lambda layer
 DATA_DIR = '/opt/data'
