@@ -3,12 +3,12 @@
 import os
 import subprocess
 from settings import ROOT_DIR, INSTALL_DIR
-from build_layer import main as build_biopython_layer
+from build_layer import main as build_layer
 
 def main():
-    start_sam()
-    # optional
-    build_biopython_layer()
+    #start_sam()
+    # Make sure biopython layer is available both locally and on S3.
+    build_layer()
     
 
 def start_dynamo():
@@ -34,9 +34,10 @@ def check_sam():
     check_docker()
 
 def check_docker():
-    code = subprocess.call(["docker", "ps"])
-    if code != 0:
-        print('It looks like docker is not running.')
+    try:
+        subprocess.check_output(["docker", "ps"])
+    except:
+        print('It looks like docker is not running.', code)
         exit()
 
 
