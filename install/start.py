@@ -1,15 +1,36 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import subprocess
 from settings import ROOT_DIR, INSTALL_DIR
+
+def install_requirements():
+    pip_cmd = [sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt']
+    subprocess.call(pip_cmd, cwd=INSTALL_DIR)
+
+# bootstrap
+install_requirements()
+
 from build_layer import main as build_layer
 
+AWS_CREDENTIALS = os.path.expanduser('~/.aws/credentials')
+
 def main():
-    #start_sam()
+    check_aws()
     # Make sure biopython layer is available both locally and on S3.
     build_layer()
-    
+    #start_sam()
+
+def check_aws():
+    """
+    If AWS credentials are missing, prompt user for them.
+    """
+    if not os.path.exists(AWS_CREDENTIALS):
+        print('\n'*5)
+        print('AWS needs to be configured with your credentials.\n')
+        cmd = ['aws', 'configure']
+        subprocess.call(cmd, cwd=ROOT_DIR)
 
 def start_dynamo():
     """
@@ -39,7 +60,6 @@ def check_docker():
     except:
         print('It looks like docker is not running.', code)
         exit()
-
 
 if __name__ == "__main__":
     main()
