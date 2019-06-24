@@ -2,16 +2,28 @@
 
 import os
 import subprocess
-
-ROOT_DIR = os.path.dirname(__file__)
+from settings import ROOT_DIR, INSTALL_DIR
+from build_layer import main as build_biopython_layer
 
 def main():
     start_sam()
+    # optional
+    build_biopython_layer()
+    
+
+def start_dynamo():
+    """
+    Run a local copy of DynamoDB (see https://hub.docker.com/r/amazon/dynamodb-local/)
+    Service will be available at http://docker.for.mac.localhost:8000
+    """
+    check_docker()
+    cmd = ['docker', 'run', '-p', '8000:8000', 'amazon/dynamodb-local']
+    subprocess.call(cmd, cwd=ROOT_DIR)
 
 def start_sam():
     check_sam()
     cmd = ["sam", "local", "start-api", "--template", "aws-template.yaml"]
-    subprocess.call(cmd, cwd=ROOT_DIR)
+    subprocess.call(cmd, cwd=INSTALL_DIR)
 
 def check_sam():
     try:
@@ -27,9 +39,6 @@ def check_docker():
         print('It looks like docker is not running.')
         exit()
 
-def build_biopython_layer():
-    cmd = ["build.sh"]
-    subprocess.call(cmd, cwd=f'{ROOT_DIR}/layers')
 
 if __name__ == "__main__":
     main()

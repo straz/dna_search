@@ -30,6 +30,7 @@ Resources:
   ###    
   # Bucket
   ###
+
   Bucket:
     Type: AWS::S3::Bucket
     DependsOn: BucketPermission
@@ -85,8 +86,6 @@ Resources:
 
   GinkgoSQS:
     Type: AWS::SQS::Queue
-    Properties:
-      QueueName: GinkgoSQS
 
 
   ###
@@ -115,15 +114,43 @@ Resources:
             Path: /queries
             Method: GET
 
+
   BucketWatcher:
     Type: AWS::Lambda::Function
     Properties:
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt EverythingRole.Arn
 
   GinkgoProcessor:
     Type: AWS::Lambda::Function
     Properties:
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Handler: lambda_handler.lambda_handler
+      Runtime: python3.7
+      Role: !GetAtt EverythingRole.Arn
+      Events:
+        ProcessorEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt GinkgoSQS.Arn
+            BatchSize: 10
+
+  EverythingRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action: "*"
+          Resource: "*"
+    Path: /
+    Policies: 
+    - Version: '2012-10-17'
+      Statement:
+      - Effect: Allow
+        Action: "*"
+        Resource: "*"
+
+
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -140,11 +167,11 @@ Resources:
       Policies:
       - PolicyName: S3Policy
         PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-              - 's3:DeleteObject'
-            Resource: !Sub "arn:aws:s3:::${BucketName}/*"
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 's3:GetObject'
+                - 's3:PutObject'
+                - 's3:DeleteObject'
+              Resource: !Sub "arn:aws:s3:::${BucketName}/*"
