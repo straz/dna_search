@@ -1,8 +1,7 @@
 """
-GET /queries/{email}
+GET /{env}/queries/{email}
   body params (form-urlencoded) with: {org, email}
-  returns JSON object with: {url, fields, guid}
-
+  returns JSONP callback object with list of items
 """
 
 import logging
@@ -16,13 +15,14 @@ DYNAMO = boto3.resource('dynamodb')
 TABLE = DYNAMO.Table(DB_NAME)
 
 def lambda_handler(event, context):
+    jsonp_callback = 'with_queries' # name of client-side js function
+    env = event['pathParameters']['env']
     email = event['pathParameters']['email']
     response = TABLE.query(
-        IndexName='email-index',
-        KeyConditionExpression=Key('email').eq(email)
-        )
+        IndexName='env-email-index',
+        KeyConditionExpression=Key('env').eq(env) & Key('email').eq(email))
     items = json.dumps(response['Items'])
     return {
         "statusCode": 200,
-        'body' : f'with_queries({items})'
+        'body' : f'{jsonp_callback}({items})'
         }

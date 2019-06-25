@@ -6,7 +6,7 @@ import tempfile
 import traceback
 from datetime import datetime
 
-from common import DB_NAME, log_setup
+from common import DB_NAME, S3_BUCKET, log_setup
 
 # Import from biopython layer
 from Bio import SeqIO
@@ -14,25 +14,24 @@ from Bio import SeqIO
 log_setup()
 
 S3 = boto3.client('s3')
-BUCKET = 'ginkgo-search'
-
 DYNAMO = boto3.client('dynamodb')
 
-# Data loaded in 'biopython' lambda layer
+# Reference data loaded in 'biopython' lambda layer
 DATA_DIR = '/opt/data'
 
 def lambda_handler(event, context):
     record = event['Records'][0]
     msg = json.loads(record['body'])
-    process_one_file(msg['guid'], msg['key'])
+    process_one_file(msg['guid'], msg['key'], msg['env'])
 
-def process_one_file(guid, key):
+def process_one_file(guid, key, env):
     """
     Search query sequence for matches.
     Update state of query in dynamodb.
     If matches are found, store results in dynamodb.
     :param guid: query ID
     :param key: S3 file containing query sequence
+    :param env: deploy environment
     """
     logging.info(f'Processing file: {key}')
     try:
@@ -44,16 +43,17 @@ def process_one_file(guid, key):
                 result = {'filename': name, 'offset': offset}
                 results.append(result)
                 print(f'found in {name} at {offset}')
-        update_database(guid, 'done', results)
-        logging.info(f'Update succeeded for guid={guid}')
+        update_database(guid, 'done', env, results)
+        logging.info(f'Update succeeded for guid={guid} in env={env}')
     except Exception as err:
         report = {'time': str(datetime.utcnow()),
                   'guid': guid,
+                  'env': env,
                   'key': key,
                   'trace' : traceback.format_exc()
                   }
         results = [{'error' : report}]
-        update_database(guid, 'error', results)
+        update_database(guid, 'error', env, results)
         raise
 
 def add_result_type_declarations(results):
@@ -67,16 +67,17 @@ def add_result_type_declarations(results):
                } for r in results ]
             }
 
-def update_database(guid, status, results):
+def update_database(guid, status, env, results):
     """
     :param guid: (string) ID of query to update
     :param status: (string)
+    :param env: (string) deployment environment
     :param results: (list of obj)
     """
     param_results = add_result_type_declarations(results)
     DYNAMO.update_item(
         TableName=DB_NAME,
-        Key={'guid': {"S" : guid}, 'email': {"S" : 'guest@example.com'}},
+        Key={'guid': {"S" : guid}, 'env': {"S" : env}},
         UpdateExpression="set results = :r, #s=:s",
         ExpressionAttributeValues={ ':r': param_results, ':s': {'S' : status} },
         ExpressionAttributeNames={ '#s': "status"}
@@ -104,9 +105,10 @@ def read_s3_file(key):
     """
     path = os.path.join(tempfile._get_default_tempdir(),
                         next(tempfile._get_candidate_names()))
+    extension = os.path.splitext(key)[1].strip('.')
     try:
-        S3.download_file(BUCKET, key, path)
-        return next(SeqIO.parse(path, 'fasta'))
+        S3.download_file(S3_BUCKET, key, path)
+        return next(SeqIO.parse(path, extension))
     finally:
         if os.path.exists(path):
             os.remove(path)

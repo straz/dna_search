@@ -3,10 +3,13 @@
 import os
 
 # User identity for NCBI Entrez
-EMAIL = "your@email.com"
+USER_EMAIL = "guest@example.com"
 
 # Developer username
-USER = 'yourname'
+DEV_USERNAME = 'yourname'
+
+# Environment to deploy to. Customize this if you don't want to share your dev environment with others.
+ENV = 'prds'
 
 # Local filesystem
 INSTALL_DIR = os.path.dirname(__file__)
@@ -14,13 +17,6 @@ ROOT_DIR = os.path.join(INSTALL_DIR, '..')
 BUILD_DIR = os.path.join(ROOT_DIR, 'build')
 DATA_DIR = os.path.join(ROOT_DIR, 'layers', 'biopython', 'data')
 
-# Developer artifacts (shared)
-S3_ARTIFACTS_BUCKET = 'ginkgo-artifacts'
-
-# Personalize this if you don't want to share artifacts
-S3_ARTIFACTS_DIR = 'dev'
-
-# 
-DEV_SQS_QUEUE = f'GinkoSQS-{USER}'
-DEV_S3_BUCKET = f'GinkoS3-{USER}'
-DEV_DB = f'GinkoDB-{USER}'
+DB_NAME = 'GinkoDB'
+SQS_ROOT_URL = 'https://sqs.us-east-1.amazonaws.com/381450826529/GinkgoSQS'
+S3_BUCKET = 'ginkgo-search'

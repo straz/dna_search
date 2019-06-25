@@ -11,7 +11,7 @@ Globals:
       AllowOrigin: "'*'"
   Function:
     Timeout: 10
-    Runtime: python3.7
+    Runtime: python3.6
     MemorySize: 128
     Handler: lambda_handler.lambda_handler
 
@@ -19,7 +19,7 @@ Parameters:
   BucketName:
     Type: String
     Default: ginkgo-search
-  BioLayerArn
+  BioLayerArn:
     Type: String
     Default: arn:aws:lambda:us-east-1:381450826529:layer:Biopython:5
 
@@ -107,7 +107,9 @@ Resources:
   QueriesGet:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: routes/queries/get
+      Runtime: python3.6
+      CodeUri: ../functions
+      Handler: queries.lambda_handler
       Role: !GetAtt ApiEndpointRole.Arn
       Events:
         List:
@@ -120,13 +122,17 @@ Resources:
   BucketWatcher:
     Type: AWS::Lambda::Function
     Properties:
+      Runtime: python3.6
+      CodeUri: ../functions
+      Handler: bucket_watcher.lambda_handler
       Role: !GetAtt EverythingRole.Arn
 
   GinkgoProcessor:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: lambda_handler.lambda_handler
-      Runtime: python3.7
+      Runtime: python3.6
+      CodeUri: ../functions
+      Handler: processor.lambda_handler
       Role: !GetAtt EverythingRole.Arn
       Layers:
         - !Ref BioLayerArn

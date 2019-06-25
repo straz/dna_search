@@ -6,7 +6,7 @@ from https://www.ncbi.nlm.nih.gov/protein/
 """
 
 import os
-from settings import DATA_DIR, EMAIL
+from settings import DATA_DIR, USER_EMAIL
 from Bio import SeqIO
 from Bio import Entrez
 

@@ -24,6 +24,7 @@ LOCAL_ZIP_PATH  = os.path.join(os.path.abspath(BUILD_DIR), 'biopython.zip')
 
 # TODO: use "sam build --use-container"
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html
+# uses 'lambci/lambda:build-python3.6'
 
 platform_warning = \
 f"""

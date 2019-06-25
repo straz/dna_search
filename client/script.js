@@ -4,10 +4,6 @@ Web client for DNA search app
 
 $(document).ready(init_page);
 
-API_URL = 'https://wxt5vzyewl.execute-api.us-east-1.amazonaws.com/dev'
-UPLOAD_URL = 'https://ginkgo-search.s3.amazonaws.com/inbox/'
-
-USER_INFO = { "email": "guest@example.com", "org": "Megacorp" }
 USER_SRC = 'user.fasta' // used as filename for user-entered data
 
 MIME_TYPES = {
@@ -18,6 +14,10 @@ MIME_TYPES = {
 // Hold onto recent items. Display them even if they're not in the database yet. 
 // Contains { guid : item }
 RECENT_ITEMS = {};
+
+DEBUG=true
+
+function log(){ if (DEBUG){ console.log(...arguments); }}
 
 function init_page(){
     poll_loop();
@@ -81,7 +81,6 @@ function start_upload(event){
     if (!validate_form()){
 	return;
     }
-    var user = get_user_info();
     var source = $("input:radio:checked").val();
 
     if (source == 'file'){
@@ -96,21 +95,26 @@ function start_upload(event){
 	mime_type = 'application/fasta'
     }
     var guid = make_guid();
-    console.log('Uploading', guid);
-    var url = UPLOAD_URL + guid + '.' + get_extension(filename);
+    log('Uploading', guid);
+    var url = SETTINGS.upload_url + '/' + SETTINGS.env + '/inbox/' + guid + '.' + get_extension(filename);
     show_upload_start(guid, filename);
+    headers = {
+	'Content-Type': mime_type,
+	'x-amz-acl': 'bucket-owner-full-control',
+	'x-amz-meta-filename' : filename,
+	'x-amz-meta-email' : SETTINGS.email,
+	'x-amz-meta-org' : SETTINGS.org,
+	'x-amz-meta-env' : SETTINGS.env,
+	'x-amz-meta-source' : source,
+	'x-amz-meta-guid' : guid
+    }
+    if ('dev_username' in SETTINGS){
+	headers['x-amz-meta-dev_username'] = SETTINGS.dev_username;
+    }
     $.ajax({
 	type: 'PUT',
 	url: url,
-	headers: {
-	    'Content-Type': mime_type,
-	    'x-amz-acl': 'bucket-owner-full-control',
-	    'x-amz-meta-filename' : filename,
-	    'x-amz-meta-email' : user.email,
-	    'x-amz-meta-org' : user.org,
-	    'x-amz-meta-source' : source,
-	    'x-amz-meta-guid' : guid
-	},
+	headers: headers,	
 	data: file,
 	contentType: 'binary/octet-stream',
 	processData: false
@@ -118,15 +122,16 @@ function start_upload(event){
 }
 
 function show_upload_start(guid, filename){
-    item = {'guid': guid, 'filename': filename, 'status': 'uploading', 'start_time': new Date()}
+    item = {'guid': guid, 'filename': filename, 'status': 'uploading', 'start_time': new Date(Date.now())}
     row = make_row(item);
     RECENT_ITEMS[guid] = item;
+    log('prepend', guid)
     $('table tbody').prepend(row.addClass('new_fade'));
     setTimeout(() =>{row.addClass('new_fade_end')}, 100);
 }
 
 function show_upload_done(guid, result){
-    console.log('Upload:', result, guid);
+    log('Upload:', result, guid);
 }
 
 function make_guid() {
@@ -138,7 +143,7 @@ function random4() {
 }
 
 function get_queries(email){
-    var url = API_URL + '/queries/' + email;
+    var url = SETTINGS.api_url + '/' + SETTINGS.env + '/queries/' + email;
     $.ajax({type: 'GET',
 	    url: url,
 	    jsonp: 'with_queries',
@@ -162,30 +167,33 @@ function update_with_recent_items(data){
 	recent = recents[i];
 	found = find_item_by_guid(recent.guid, data);
 	if ((typeof found == 'undefined') || found == null){
+	    log('inject recent', recent.guid)
 	    result.push(recent);
 	} else {
 	    // safely recorded in database, no further need to track locally in the client
+	    log('delete recent', recent.guid)
 	    delete RECENT_ITEMS[recent.guid];
 	}
     }
-    return result;
+    return sorted_by_date(result);
 }
 
 function with_queries(data){
+    log('data received', data.length)
     show_table(update_with_recent_items(data));
 }    
 
 // Polls the server every 5 seconds to get a fresh copy of job status
 function poll_loop(){
     wait = 5 * 1000 
-    get_queries(USER_INFO.email);
+    get_queries(SETTINGS.email);
     setTimeout(poll_loop, wait)
 }
 
 function show_table(queries){
     $('#queries').empty();
     $('#queries').append(make_table_head(), $('<tbody/>'));
-    $.each(sorted_by_date(queries), (i, item)=>{$('#queries tbody').append(make_row(item))});
+    $.each(queries, (i, item)=>{$('#queries tbody').append(make_row(item))});
 }
 
 function make_table_head(){
@@ -269,11 +277,17 @@ function format_results(results){
     return div
 }
 
-function format_time(string) {
-    if (typeof string == 'undefined'){
+function format_time(timestamp) {
+    if ((typeof timestamp) == 'undefined'){
+	return 'undefined'
+    }
+    if ((typeof timestamp) == 'string'){
+	date = new Date(timestamp+' UTC');
+    } else if ((typeof timestamp.getMonth) === 'function'){
+	date = timestamp
+    } else {
 	return '-'
     }
-    var date = new Date(string+' UTC');
     var hours = date.getHours();
     var minutes = date.getMinutes();
     var ampm = hours >= 12 ? 'pm' : 'am';
