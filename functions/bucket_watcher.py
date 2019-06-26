@@ -79,7 +79,10 @@ def handle_upload_event(bucket, key, metadata):
     # Move from /inbox to /queries
     new_key = move_file(bucket, key, metadata, env)
     # Send 'process' event
-    message = {'dispatch' : 'process', 'guid': guid, 'key': new_key, 'env': env}
+    message = {'dispatch' : 'process',
+               'env': env,
+               'Records': [{'body' : json.dumps({'guid': guid, 'key': new_key, 'env':env })
+                            }]}
     notify_sqs(env, message)
 
 

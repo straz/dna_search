@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 """
+Kills the sam-local job (running in a docker container)
 Kills the simple static web server (typically running in background)
 
 Implementation: kills any Python job listening on port 8000

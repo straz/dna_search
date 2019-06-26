@@ -12,20 +12,13 @@ import requests
 import logging
 import settings
 import boto3
-from botocore import UNSIGNED
-from botocore.config import Config
+import subprocess
 
 logging.basicConfig(level=logging.INFO, format=settings.LOG_FORMAT)
 
+# Mapping of dispatch key to Lambda function name
 FUNCTIONS = {'upload': 'BucketWatcher',
-             'process': 'Processor'}
-
-LAMBDA = boto3.client('lambda',
-                      endpoint_url=settings.LOCAL_API_URL,
-                      use_ssl=False,
-                      verify=False,
-                      config=Config(signature_version=UNSIGNED,
-                                    retries={'max_attempts': 0}))
+             'process': 'GinkgoProcessor'}
 
 
 def main():
@@ -43,19 +36,23 @@ def main():
         time.sleep(settings.POLL_INTERVAL)
 
 
-
 def invoke_item(item):
+    """
+    :param item: (dict)
+    """
+    logging.info('*'*100)
     logging.info(f'invoke item={item}')
-    message = json.loads(item)
-    dispatch = message.get('dispatch', 'none')
+    logging.info('*'*100)
+    body_string = item.get('body', '{}')
+    body = json.loads(body_string)
+    dispatch = body.get('dispatch', 'none')
     function = FUNCTIONS.get(dispatch, None)
     if not function:
-        raise Exception(f"Can't handle message: {message}")
+        raise Exception(f"Can't handle message: {item}")
 
-    response = LAMBDA.invoke(FunctionName=function,
-                             LogType='Tail',
-                             Payload=item)
-    fmt_response = json.dumps(response, indent=2)
+
+    cmd = ['sam', 'local', 'invoke', function]
+    response = subprocess.check_output(cmd, input=body_string.encode('utf8'))
     logging.info(f'response={response}')
 
 if __name__ == '__main__':

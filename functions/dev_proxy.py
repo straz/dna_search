@@ -25,7 +25,7 @@ def lambda_handler(event, context):
     env = event['pathParameters']['env']
     queue = get_queue(env, SQS)
     items = []
-    for message in queue.receive_messages(MessageAttributeNames=['*']):
+    for message in queue.receive_messages(MessageAttributeNames=['*'], WaitTimeSeconds=2):
         items.append({'body': message.body, 'attributes': message.attributes})
         message.delete()
     return {

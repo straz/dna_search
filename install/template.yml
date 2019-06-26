@@ -37,16 +37,14 @@ Resources:
     Properties:
       Runtime: python3.7
       Handler: bucket_watcher.lambda_handler
-      CodeUri: ./functions.zip
-      Role: !GetAtt EverythingRole.Arn
+      Code: ./functions.zip
 
   GinkgoProcessor:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.7
       Handler: processor.lambda_handler
-      CodeUri: ./functions.zip
-      Role: !GetAtt EverythingRole.Arn
+      Code: ./functions.zip
       Layers:
         - !Ref BioLayerArn
       Events:

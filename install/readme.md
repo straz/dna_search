@@ -21,9 +21,10 @@ If this is your first time using aws, you'll be prompted for your [aws credentia
 ## Files
 
 ### Stuff used during development
-`start.py` - main program for starting up a local dev environment
-`deploy_lambda.py` - packs up zip for use by SAM
-`kill.py` - opposite of `start.py`, good for pesky background jobs
+
+`start.py` - main program for starting up a local dev environment  
+`deploy_lambda.py` - packs up zip for use by SAM  
+`kill.py` - opposite of `start.py`, good for pesky background jobs  
 `settings.py` - configuration
 
 ### Stuff used to deploy to production
@@ -33,7 +34,8 @@ If this is your first time using aws, you'll be prompted for your [aws credentia
 `start_bootstrap.py` - called by `start.py`, makes sure AWS is properly installed and configured
 
 ### Stuff you need only once (for the entire organization)
-`build_layer.py` - creates biopython.zip, the deployment package for a lambda layer containing biopython and reference data from NCBI
+
+`build_layer.py` - creates biopython.zip, the deployment package for a lambda layer containing biopython and reference data from NCBI  
 `ncbi_download.py` - gets reference data from NCBI
 
 

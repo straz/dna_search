@@ -4,6 +4,13 @@
 
 The client url is https://straz.github.io/dna_search/client/
 
+## Requirements addressed
+
+* Technologies used are basically javascript, python, AWS
+* All processing is service-based, coupled by message-passing.
+* A single script (`install/start.py`) bootstraps all dependencies (other than `docker`) and launches all local dev processes.
+* Support for local development with multiple dev environments operating on a multitenant dev environment.
+
 ## Components
 
 ### Client
@@ -13,11 +20,10 @@ For local development, run `serve.sh`
 
 The client makes two API calls:
   * upload files to S3 (in `{s3}/inbox/`)
-  * get status of current and pending jobs (from {api}/queries/{user})
+  * get status of current and pending jobs (from {api}/{env}/queries/{user})
 
 The logged-in user is currently hard-coded ('guest@example.com') in the client settings,
-but jobs are tagged - multiple users are supported. Only the relevant data is
-displayed to the logged-in user.
+but jobs are tagged - multiple users are supported. Each user sees only their own data.
 
 When uploading to S3, the files are tagged with metadata which is captured in the jobs table.
 
@@ -71,7 +77,7 @@ queue, which eventually end up in that developer's SAM local environment for pro
 
 ### Lambda
 
-There are four Lambdas and one layer
+There are four Lambdas and one layer.
 The worker code is in the `processor` lambda.
 
 Files:
