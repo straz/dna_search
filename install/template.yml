@@ -1,0 +1,57 @@
+Globals:
+  Api:
+    Cors:
+      AllowHeaders: '''Content-Type,Authorization'''
+      AllowMethods: '''OPTIONS,POST,GET,PUT,DELETE'''
+      AllowOrigin: '''*'''
+
+Parameters:
+  BioLayerArn:
+    Type: String
+    Default: arn:aws:lambda:us-east-1:381450826529:layer:Biopython:5
+
+Resources:
+  GinkgoApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+
+  GinkgoSQS:
+    Type: AWS::SQS::Queue
+
+  QueriesGet:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.7
+      Handler: queries.lambda_handler
+      CodeUri: ./functions.zip
+      Events:
+        List:
+          Type: Api
+          Properties:
+            Path: /{env}/queries/{email}
+            Method: GET
+
+  BucketWatcher:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.7
+      Handler: bucket_watcher.lambda_handler
+      CodeUri: ./functions.zip
+      Role: !GetAtt EverythingRole.Arn
+
+  GinkgoProcessor:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.7
+      Handler: processor.lambda_handler
+      CodeUri: ./functions.zip
+      Role: !GetAtt EverythingRole.Arn
+      Layers:
+        - !Ref BioLayerArn
+      Events:
+        ProcessorEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt GinkgoSQS.Arn
+            BatchSize: 10

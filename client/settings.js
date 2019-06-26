@@ -1,7 +1,7 @@
 const SETTINGS = {
-    "email": "guest@example.com",
-    "org": "Megacorp",
-    "env": "prd",
-    "api_url" : 'https://wxt5vzyewl.execute-api.us-east-1.amazonaws.com/prd',
-    "upload_url" : 'https://ginkgo-search.s3.amazonaws.com'
+  "env": "dev",
+  "email": "guest@example.com",
+  "dev_username": "yourname",
+  "api_url": "http://127.0.0.1:3000",
+  "upload_url": "https://ginkgo-search.s3.amazonaws.com"
 }

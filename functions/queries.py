@@ -1,6 +1,9 @@
 """
+Queries
+
+API to deliver pending and processed results to client UI
+
 GET /{env}/queries/{email}
-  body params (form-urlencoded) with: {org, email}
   returns JSONP callback object with list of items
 """
 
@@ -26,3 +29,4 @@ def lambda_handler(event, context):
         "statusCode": 200,
         'body' : f'{jsonp_callback}({items})'
         }
+

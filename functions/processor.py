@@ -83,6 +83,17 @@ def update_database(guid, status, env, results):
         ExpressionAttributeNames={ '#s': "status"}
         )
 
+def add_result_type_declarations(results):
+    """
+    Dynamodb requires dict markup declaring the type of every entity
+    This marks up the results object.
+    """
+    return {"L" : 
+            [ {"M":
+               { k:{"S":str(v)} for k,v in r.items()}
+               } for r in results ]
+            }
+
 def read_reference_data():
     """
     Read sequences local directory (data/) into memory
