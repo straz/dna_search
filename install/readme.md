@@ -4,7 +4,7 @@
 
 You must have
  1. Python3
- 2. Docker
+ 2. Docker (in order to run AWS SAM local)
 
 ## Configure
 
