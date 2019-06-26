@@ -71,7 +71,7 @@ There is a separate SQS queue for each environment, with names `GinkgoSQS-prd`, 
 
 `GinkgoSQS-prd` behaves specially. It only carries 'process' messages, issued after `bucket_watcher` runs.
 
-All the other (developer) queues carry both `upload` and `process messages`. Since S3 has no path to trigger
+All the other (developer) queues carry both `upload` and `process` messages. Since S3 has no path to trigger
 the SAM local environment on uploads, `bucket_watcher` forwards `upload` events to the appropriate developer
 queue, which eventually end up in that developer's SAM local environment for processing.
 
@@ -82,12 +82,11 @@ The worker code is in the `processor` lambda.
 
 Files:
 ```
-   functions/bucket_watcher.py
-   functions/processor.py
-   functions/queries.py
-   functions/dev_proxy.py
-   functions/common.py       # shared code
-
+   functions/bucket_watcher.py   # accept and ingest file uploads
+   functions/processor.py        # worker code: sequence matching
+   functions/queries.py          # API for client gui - retrieves job data for a user
+   functions/dev_proxy.py        # API for polling - forwards dev queues to the local environment
+   functions/common.py           # shared code
 ```
 
 #### bucket_watcher
@@ -105,7 +104,7 @@ so it can be handled by the developer's `bucket_watcher` instance.
 
 `processor` listens to the SQS queue for awaiting processing. When a message is received:
  * reference data is loaded (cached in memory, as far as lambda will allow) from the `biopython` layer.
- * the query is retrieved from {s3}/{env}/queries
+ * the query is retrieved from `{s3}/{env}/queries`
  * search using biopython
  * record results in DynamoDB
 
