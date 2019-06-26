@@ -87,7 +87,13 @@ Files:
    functions/queries.py          # API for client gui - retrieves job data for a user
    functions/dev_proxy.py        # API for polling - forwards dev queues to the local environment
    functions/common.py           # shared code
+   install/ncbi_download.py      # pulls NCBI reference data used in biopython layer
+   install/build_layer.py        # pip and zip to create biopython layer
 ```
+
+#### biopython layer
+This Layer is shared by workers: it contains the (large) biopython and numpy libraries,
+and it contains the (potentially large) NCBI reference dataset.
 
 #### bucket_watcher
 
