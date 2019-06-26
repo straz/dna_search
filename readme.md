@@ -65,7 +65,7 @@ Since it's sharded by env and is NoSQL, the developers can coexist peacefully.
 
 ### SQS
 
-When files arrive in S3, they are minimally processed and a message is queued on SQS for processing.
+When files arrive in S3, they are minimally processed (file ingestion) and a message is queued on SQS for further (sequence search) processing.
 
 There is a separate SQS queue for each environment, with names `GinkgoSQS-prd`, `GinkgoSQS-dev`, etc.
 
