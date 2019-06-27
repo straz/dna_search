@@ -180,6 +180,12 @@ function update_with_recent_items(data){
 
 function with_queries(data){
     log('data received', data.length)
+    for (i in data){
+	item = data[i]
+        if ((typeof data.start_time) == 'string'){
+	    data.start_time = new Date(timestamp+' UTC');
+	}
+    }
     show_table(update_with_recent_items(data));
 }    
 
