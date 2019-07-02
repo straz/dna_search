@@ -53,7 +53,7 @@ def check_docker():
     try:
         subprocess.check_output(["docker", "ps"])
     except:
-        print('It looks like docker is not running.', code)
+        print('It looks like docker is not running.')
         exit()
 
 def run_web_server(port=8000):

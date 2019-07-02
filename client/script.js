@@ -272,10 +272,10 @@ function format_results(results){
     }
     for (i in results){
 	var result = results[i];
-	if ('filename' in result){
-	    reference = result.filename.split('.')[0]
-	    text = reference + " at loc=" + result.offset;
-	    div.append($('<div/>').addClass('match').text(text));
+	if ('name' in result){
+	    text = "Match at location " + result.offset + ':';
+	    div.append($('<div/>').addClass('match_name text-success').text(text));
+	    div.append($('<div/>').addClass('match_desc').text(result.desc));
 	} else if ('error' in result){
 	    div.addClass('error alert-warning').text(result.error);
 	}

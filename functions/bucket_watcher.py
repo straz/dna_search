@@ -26,7 +26,7 @@ DYNAMO = boto3.client('dynamodb')
 
 
 def lambda_handler(event, context):
-    logging.info("event= {}".format(json.dumps(event, indent=2)))
+    logging.info("event= {}".format(json.dumps(event)))
     # default value, for error logging
     metadata = {'guid': str(datetime.utcnow())}
     try:
@@ -64,11 +64,10 @@ def forward_upload_event(bucket, key, env):
     Send 'upload' message to dev queue to be handled in dev environment.
     Happens when S3 detects an incoming file (detected by prd) that belongs to dev.
     """
-    record = {'s3' : {'bucket' : {'name': bucket},
-                      'object' : {'key': key}}}
     message = {'dispatch': 'upload',
                'env': env,
-               'Records' : [record]}
+               's3' : {'bucket' : {'name': bucket},
+                       'object' : {'key': key}}}
     notify_sqs(env, message)
 
 def handle_upload_event(bucket, key, metadata):

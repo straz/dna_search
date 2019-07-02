@@ -49,10 +49,15 @@ def invoke_item(item):
     function = FUNCTIONS.get(dispatch, None)
     if not function:
         raise Exception(f"Can't handle message: {item}")
-
-
+    if dispatch == 'upload':
+        # S3 event
+        event = {'Records' : [body]}
+    else:
+        # SQS event
+        event = {'Records' : [{'body': body_string}]}
+    event_string = json.dumps(event)
     cmd = ['sam', 'local', 'invoke', function]
-    response = subprocess.check_output(cmd, input=body_string.encode('utf8'))
+    response = subprocess.check_output(cmd, input=event_string.encode('utf8'))
     logging.info(f'response={response}')
 
 if __name__ == '__main__':

@@ -15,3 +15,8 @@
 }
 
 .time { font-size: 90%; }
+
+.match_desc {
+    font-size: 80%;
+    margin-bottom: 1em;
+    }

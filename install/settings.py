@@ -12,7 +12,7 @@ DEV_EMAIL = 'developer@acme.com'
 DEV_USERNAME = 'yourname'
 
 # Environment to deploy to. Customize this if you don't want to share your dev environment with others.
-ENV = 'prd'
+ENV = 'dev'
 
 # Local filesystem
 INSTALL_DIR = os.path.dirname(__file__)
