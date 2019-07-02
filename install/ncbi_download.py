@@ -6,7 +6,7 @@ from https://www.ncbi.nlm.nih.gov/protein/
 """
 
 import os
-from settings import DATA_DIR, USER_EMAIL
+from settings import DATA_DIR, DEV_EMAIL
 from Bio import SeqIO
 from Bio import Entrez
 
@@ -23,15 +23,17 @@ def fetch(id, format='fasta'):
     :param id: NCBI Reference Sequence id
     :param format: either 'fasta' or 'gb'
     """
-    fname = os.path.join(DATA_DIR, f'{id}.{format}')
-    if not os.path.isfile(fname):
-        with Entrez.efetch(db="nuccore", id=id, rettype=format, retmode="text") as conn:
-            with open(fname, 'w') as fp:
-                fp.write(conn.read())
-                print(f'Saved {fname}')
+    fname = os.path.abspath(os.path.join(DATA_DIR, f'{id}.{format}'))
+    if os.path.isfile(fname):
+        print(f'Skipping existing file: {fname}')
+        return
+    with Entrez.efetch(db="nuccore", id=id, rettype=format, retmode="text") as conn:
+        with open(fname, 'w') as fp:
+            fp.write(conn.read())
+            print(f'Saved {fname}')
 
 def main():
-    Entrez.email = EMAIL
+    Entrez.email = DEV_EMAIL
     for id in IDS:
         f = fetch(id)
         

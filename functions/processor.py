@@ -22,6 +22,7 @@ DATA_DIR = '/opt/data'
 def lambda_handler(event, context):
     record = event['Records'][0]
     msg = json.loads(record['body'])
+    logging.info(f'received msg={msg}')
     process_one_file(msg['guid'], msg['key'], msg['env'])
 
 def process_one_file(guid, key, env):
@@ -40,9 +41,13 @@ def process_one_file(guid, key, env):
         for name, reference_seq in REFERENCE_RECORDS.items():
             offset = reference_seq.seq.find(query_seq)
             if offset != -1:
-                result = {'filename': name, 'offset': offset}
+                result = {'filename': name,
+                          'offset': offset,
+                          'name': reference_seq.name,
+                          'desc': reference_seq.description
+                          }
                 results.append(result)
-                print(f'found in {name} at {offset}')
+                logging.info(f'found in {name} at {offset}')
         update_database(guid, 'done', env, results)
         logging.info(f'Update succeeded for guid={guid} in env={env}')
     except Exception as err:

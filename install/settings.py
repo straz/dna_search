@@ -6,11 +6,13 @@ import os
 USER_EMAIL = "guest@example.com"
 AWS_CREDENTIALS = os.path.expanduser('~/.aws/credentials')
 
+# Developer identity for NCBI Entrez
+DEV_EMAIL = 'developer@acme.com'
 # Developer username
 DEV_USERNAME = 'yourname'
 
 # Environment to deploy to. Customize this if you don't want to share your dev environment with others.
-ENV = 'dev'
+ENV = 'prd'
 
 # Local filesystem
 INSTALL_DIR = os.path.dirname(__file__)

@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         bucket = s3_info['bucket']['name']
         key = s3_info['object']['key']
         if 'inbox' not in key:
-            logging.info(f'ignoring bucket={bucket}, key={key}')
+            logging.info(f'ignoring invalid incoming file: bucket={bucket}, key={key}')
             return
         logging.info(f'handling bucket={bucket}, key={key}')
         metadata = S3.head_object(Bucket=bucket, Key=key)['Metadata']
@@ -68,7 +68,7 @@ def forward_upload_event(bucket, key, env):
                       'object' : {'key': key}}}
     message = {'dispatch': 'upload',
                'env': env,
-               'Records' : [ record]}
+               'Records' : [record]}
     notify_sqs(env, message)
 
 def handle_upload_event(bucket, key, metadata):
@@ -81,8 +81,9 @@ def handle_upload_event(bucket, key, metadata):
     # Send 'process' event
     message = {'dispatch' : 'process',
                'env': env,
-               'Records': [{'body' : json.dumps({'guid': guid, 'key': new_key, 'env':env })
-                            }]}
+               'guid': guid,
+               'key': new_key
+               }
     notify_sqs(env, message)
 
 
